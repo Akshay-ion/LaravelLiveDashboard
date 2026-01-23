@@ -6,6 +6,18 @@
             Launch demo modal
         </button>
     </div>
+    <table class="table table-bordered mt-5" id="categoryTable">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+    </table>
 
 <!-- Modal -->
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -28,34 +40,38 @@
             </div>
         </div>
     </div>
-
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Name</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="categoryTableBody">
-
-        </tbody>
-    </table>
 </div>
 @push('scripts')
 <script>
 $(document).ready(function () {
 
-    const categoryTable = $('#categoryTableBody').DataTable({
-        processing: true,
-        serverSide: true,
-        ajax: "{{ route('getcategories') }}",
-        columns: [
-            { data: 'id', name: 'id' },
-            { data: 'name', name: 'name' },
-            { data: 'actions', name: 'actions', orderable: false, searchable: false },
-        ]
-    });
+    const categoryTable = $('#categoryTable').DataTable({
+                                processing: true,
+                                serverSide: true,
+                                ajax: "{{ route('getcategories') }}",
+                                columns: [
+                                    {
+                                        data: null,
+                                        orderable: false,
+                                        searchable: false,
+                                        render: function (data, type, row, meta) {
+                                            return meta.row + meta.settings._iDisplayStart + 1;
+                                        }
+                                    },
+                                    { data: 'name', name: 'name' },
+                                    {
+                                        data: 'id',
+                                        orderable: false,
+                                        searchable: false,
+                                        render: function (id) {
+                                            return `
+                                                <button class="btn btn-sm btn-primary edit-btn" data-id="${id}">Edit</button>
+                                                <button class="btn btn-sm btn-danger delete-btn" data-id="${id}">Delete</button>
+                                            `;
+                                        }
+                                    }
+                                ]
+                            });
 
     const categoryFormModal = new bootstrap.Modal(document.getElementById('exampleModal'));
 
