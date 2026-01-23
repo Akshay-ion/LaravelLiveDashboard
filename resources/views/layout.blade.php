@@ -8,6 +8,7 @@
     <title>Live Dashboard</title>
     <link rel="stylesheet" href="{{ asset('assets/bootstrap.min.css')}}">
     <link rel="stylesheet" href="{{ asset('assets/dataTables.dataTables.min.css')}}">
+    <link rel="stylesheet" href="{{ asset('assets/sweetalert2.min.css')}}">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
@@ -35,7 +36,7 @@
 <script src="{{ asset('assets/jquery.min.js')}}"></script>
 <script src="{{ asset('assets/bootstrap.bundle.min.js')}}"></script>
 <script src="{{ asset('assets/dataTables.min.js')}}"></script>
-<script src="{{ asset('assets/sweetalert.min.js')}}"></script>
+<script src="{{ asset('assets/sweetalert2.min.js')}}"></script>
 <script>
     $.ajaxSetup({
         headers: {
@@ -43,30 +44,55 @@
         }
     });
 
-    function sweetAlertMessage(type, message, button=false){
-        swal({
+    function sweetAlertMessage(type, message, button = false) {
+        Swal.fire({
             title: type.charAt(0).toUpperCase() + type.slice(1),
             text: message,
             icon: type,
-            button: button ? "OK" : false,
-            timer: button ? null : 2000, 
+            showConfirmButton: button,
+            timer: button ? null : 2000,
+            timerProgressBar: !button,
         });
     }
 
-    function sweetalertDelete(type, message, route){
-        swal({
-            title: type.charAt(0).toUpperCase() + type.slice(1),
-            text: message,
-            icon: type,
-            buttons: true,
-            dangerMode: true,
-        })
-        .then((willDelete) => {
-            if (willDelete) {
-                callback();
+    function sweetAlertDelete(route, dataTable) {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "Once deleted, you will not be able to recover this data!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!",
+            cancelButtonText: "Cancel",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    type: "DELETE",
+                    url: route,
+                    dataType: "json",
+                    success: function (response) {
+                        if (response.status === 200) {
+                            dataTable.ajax.reload();
+                            sweetAlertMessage("success", response.message);
+                        } else {
+                            sweetAlertMessage("error", response.message, true);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        sweetAlertMessage(
+                            "error",
+                            "An error occurred while processing your request.",
+                            true
+                        );
+                        console.error(error);
+                    },
+                });
             }
         });
     }
+
+
 </script>
 @stack('scripts')
 </body>

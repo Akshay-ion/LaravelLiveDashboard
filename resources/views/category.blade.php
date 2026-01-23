@@ -2,7 +2,7 @@
 @section('content')
     <div class="d-flex justify-content-between">
         <h1>Category</h1>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#categoryModal">
+        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#categoryModal">
             Add Category
         </button>
     </div>
@@ -69,7 +69,7 @@ $(document).ready(function () {
                                                     onclick="editCategory(${row.id}, '${row.name.replace(/'/g, "\\'")}')">
                                                     Edit
                                                 </button>
-                                                <button class="btn btn-sm btn-danger delete-btn" data-id="${id}">
+                                                <button class="btn btn-sm btn-danger delete-btn" data-id="${id}" onclick="deleteCategory(${id})">
                                                     Delete
                                                 </button>
                                             `;
@@ -89,6 +89,10 @@ $(document).ready(function () {
             return;
         }
 
+        let buttonText = categoryId ? 'Updating...' : 'Saving...';
+        $('#formButton').text(buttonText);
+        $('#formButton').attr('disabled', true);
+
         $.ajax({
             type: "POST",
             url: "{{ route('category.store') }}",
@@ -103,11 +107,11 @@ $(document).ready(function () {
                     categoryTable.ajax.reload(null, false);
                 }
                 else{
-                    sweetAlertMessage('error', response.message);
+                    sweetAlertMessage('error', response.message, true);
                 }
             },
             error: function (xhr, status, error) {
-                sweetAlertMessage('error', 'An error occurred while processing your request.');
+                sweetAlertMessage('error', 'An error occurred while processing your request.', true);
                 console.error(error);
             }
         }).then(() => {
@@ -117,6 +121,7 @@ $(document).ready(function () {
             $('#categoryName').val('');
             $('#categoryModalLabel').text('Add Category');
             $('#formButton').text('Save');
+            $('#formButton').attr('disabled', false);
         });
     };
 
@@ -130,6 +135,12 @@ $(document).ready(function () {
 
         categoryFormModal.show();
     };
+
+    window.deleteCategory = function (id) {
+        let route = "{{ url('category') }}/" + id;
+        sweetAlertDelete(route, categoryTable);
+    };
+
 });
 </script>
 @endpush
