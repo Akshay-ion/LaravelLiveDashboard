@@ -9,3 +9,4 @@ Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::resource('category', CategoryController::class);
 Route::get('/get-category', [CategoryController::class, 'getCategories'])->name('getcategories');
 Route::resource('product', ProductController::class);
+Route::get('/get-product', [ProductController::class, 'getCategories'])->name('getproducts');

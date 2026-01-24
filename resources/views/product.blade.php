@@ -1,15 +1,16 @@
 @extends('layout')
 @section('content')
     <div class="d-flex justify-content-between">
-        <h1>Category</h1>
-        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#categoryModal">
-            Add Category
+        <h1>Product</h1>
+        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#productModal">
+            Add Product
         </button>
     </div>
-    <table class="table table-bordered mt-5" id="categoryTable">
+    <table class="table table-bordered mt-5" id="productTable">
         <thead>
             <tr>
                 <th>#</th>
+                <th>Category</th>
                 <th>Name</th>
                 <th>Actions</th>
             </tr>
@@ -20,18 +21,27 @@
     </table>
 
 <!-- Modal -->
-<div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
+<div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="categoryModalLabel">Add Category</h1>
+                <h1 class="modal-title fs-5" id="productModalLabel">Add Product</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <input type="hidden" id="categoryId" name="category_id">
+                <input type="hidden" id="productId" name="product_id">
                 <div class="form-group">
-                    <label for="categoryName">Category Name</label>
-                    <input type="text" class="form-control" id="categoryName" name="name" placeholder="Enter category name">
+                    <label for="categorySelect">Category</label>
+                    <select class="form-select" id="categorySelect" name="category_id">
+                        <option value="" selected disabled>Select Category</option>
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="productName">Product Name</label>
+                    <input type="text" class="form-control" id="productName" name="name" placeholder="Enter product name">
                 </div>
             </div>
             <div class="modal-footer">
@@ -45,10 +55,10 @@
 <script>
 $(document).ready(function () {
 
-    const categoryTable = $('#categoryTable').DataTable({
+    const productTable = $('#productTable').DataTable({
                                 processing: true,
                                 serverSide: true,
-                                ajax: "{{ route('getcategories') }}",
+                                ajax: "{{ route('getproducts') }}",
                                 columns: [
                                     {
                                         data: null,
@@ -58,6 +68,7 @@ $(document).ready(function () {
                                             return meta.row + meta.settings._iDisplayStart + 1;
                                         }
                                     },
+                                    { data: 'category_name', name: 'category_name' },
                                     { data: 'name', name: 'name' },
                                     {
                                         data: 'id',
@@ -65,11 +76,15 @@ $(document).ready(function () {
                                         searchable: false,
                                         render: function (id, type, row) {
                                             return `
-                                                <button class="btn btn-sm btn-primary"
-                                                    onclick="editCategory(${row.id}, '${row.name.replace(/'/g, "\\'")}')">
+                                               <button class="btn btn-sm btn-primary"
+                                                    onclick="editProduct(
+                                                    ${row.id},
+                                                    '${row.name.replace(/'/g, "\\'")}',
+                                                    ${row.category_id}
+                                                )">
                                                     Edit
                                                 </button>
-                                                <button class="btn btn-sm btn-danger delete-btn" data-id="${id}" onclick="deleteCategory(${id})">
+                                                <button class="btn btn-sm btn-danger delete-btn" data-id="${id}" onclick="deleteProduct(${id})">
                                                     Delete
                                                 </button>
                                             `;
@@ -78,33 +93,39 @@ $(document).ready(function () {
                                 ]
                             });
 
-    const categoryFormModal = new bootstrap.Modal(document.getElementById('categoryModal'));
-
+    const productFormModal = new bootstrap.Modal(document.getElementById('productModal'));
+    
     window.submitForm = function () {
-        let categoryId = $('#categoryId').val();
-        let categoryName = $('#categoryName').val();
+        let productId = $('#productId').val();
+        let productName = $('#productName').val();
+        let category = $('#categorySelect').val();
 
-        if (categoryName === '') {
-            sweetAlertMessage('error', 'Category name cannot be empty');
+        if (productName === '') {
+            sweetAlertMessage('error', 'Product name cannot be empty');
+            return;
+        }
+        if (!category) {
+            sweetAlertMessage('error', 'Please select a category');
             return;
         }
 
-        let buttonText = categoryId ? 'Updating...' : 'Saving...';
+        let buttonText = productId ? 'Updating...' : 'Saving...';
         $('#formButton').text(buttonText);
         $('#formButton').attr('disabled', true);
 
         $.ajax({
             type: "POST",
-            url: "{{ route('category.store') }}",
+            url: "{{ route('product.store') }}",
             dataType: "json",
             data: {
-                name: categoryName,
-                category_id: categoryId,
+                name: productName,
+                category_id: category,
+                product_id: productId,
             },
             success: function (response) {
                 if (response.status === 200) {
                     sweetAlertMessage('success', response.message);
-                    categoryTable.ajax.reload(null, false);
+                    productTable.ajax.reload(null, false);
                 }
                 else{
                     sweetAlertMessage('error', response.message, true);
@@ -115,30 +136,32 @@ $(document).ready(function () {
                 console.error(error);
             }
         }).always(() => {
-            categoryTable.ajax.reload();
-            categoryFormModal.hide();
-            $('#categoryId').val('');
-            $('#categoryName').val('');
-            $('#categoryModalLabel').text('Add Category');
+            productTable.ajax.reload();
+            productFormModal.hide();
+            $('#productId').val('');
+            $('#productName').val('');
+            $('#categorySelect').val('');
+            $('#productModalLabel').text('Add Product');
             $('#formButton').text('Save');
             $('#formButton').attr('disabled', false);
         });
     };
 
-    window.editCategory = function (id, name) {
+    window.editProduct = function (id, name, categoryId) {
 
-        $('#categoryModalLabel').text('Edit Category');
+        $('#productModalLabel').text('Edit Product');
         $('#formButton').text('Update');
 
-        $('#categoryId').val(id);
-        $('#categoryName').val(name);
+        $('#productId').val(id);
+        $('#productName').val(name);
+        $('#categorySelect').val(categoryId).trigger('change');
 
-        categoryFormModal.show();
+        productFormModal.show();
     };
 
-    window.deleteCategory = function (id) {
-        let route = "{{ url('category') }}/" + id;
-        sweetAlertDelete(route, categoryTable);
+    window.deleteProduct = function (id) {
+        let route = "{{ url('product') }}/" + id;
+        sweetAlertDelete(route, productTable);
     };
 
 });

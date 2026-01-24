@@ -60,7 +60,7 @@ class CategoryController extends Controller
     public function store(Request $request){
         try{
             $request->validate([
-                'name'=>'required|unique:categories,name',
+                'name' => 'required|unique:categories,name,' . ($request->category_id ?? ''),
                 'category_id'=>'nullable|exists:categories,id'
             ]);
 
@@ -80,7 +80,6 @@ class CategoryController extends Controller
         }catch(Exception $e){
             return response()->json(['status'=>500, 'message'=> 'Something Went Wrong: '.$e->getMessage()]);
         }
-
     }
 
     public function destroy($id){
