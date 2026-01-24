@@ -20,10 +20,10 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="{{ route('category.index') }}">Category</a>
+                    <a class="nav-link {{ request()->routeIs('category.index') ? 'active' : '' }}" aria-current="page" href="{{ route('category.index') }}">Category</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ route(name: 'product.index') }}">Product</a>
+                    <a class="nav-link {{ request()->routeIs('product.index') ? 'active' : '' }}" href="{{ route(name: 'product.index') }}">Product</a>
                 </li>
             </ul>
             </div>
