@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\DashboardUpdated;
 use App\Models\Category;
 use Exception;
 use Illuminate\Http\Request;
@@ -75,6 +76,10 @@ class CategoryController extends Controller
             Category::create([
                 'name'=>$request->name,
             ]);
+
+            $categoryCount = Category::count();
+
+            broadcast(new DashboardUpdated($categoryCount));
 
             return response()->json(['status'=>200, 'message'=> 'Category Added Successfully']);
         }catch(Exception $e){

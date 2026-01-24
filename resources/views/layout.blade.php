@@ -37,6 +37,36 @@
 <script src="{{ asset('assets/bootstrap.bundle.min.js')}}"></script>
 <script src="{{ asset('assets/dataTables.min.js')}}"></script>
 <script src="{{ asset('assets/sweetalert2.min.js')}}"></script>
+
+<!-- Include CDNs -->
+<script src="https://js.pusher.com/7.0/pusher.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.11.0/dist/echo.iife.js"></script>
+
+<script>
+    // Make Pusher available to Echo
+    window.Pusher = Pusher;
+
+    // Initialize Echo IIFE
+    window.Echo = new Echo({
+        broadcaster: 'pusher',
+        key: 'local',              // dummy key for Reverb
+        wsHost: window.location.hostname,
+        wsPort: 8080,              // your Reverb port
+        forceTLS: false,
+        encrypted: false,
+        disableStats: true,
+        cluster: undefined
+    });
+
+    // Subscribe to channel & event
+    window.Echo.channel('dashboard')
+        .listen('.DashboardUpdated', function(e) {
+            console.log('LIVE DASHBOARD EVENT', e);
+            document.getElementById('categoryCount').textContent = e.categoryCount;
+        });
+</script>
+@stack('scripts')
+
 <script>
     $.ajaxSetup({
         headers: {
@@ -94,6 +124,5 @@
 
 
 </script>
-@stack('scripts')
 </body>
 </html>
