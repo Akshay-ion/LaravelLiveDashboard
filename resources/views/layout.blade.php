@@ -62,7 +62,10 @@
     window.Echo.channel('dashboard')
         .listen('.DashboardUpdated', function(e) {
             console.log('LIVE DASHBOARD EVENT', e);
+            console.log('Categories:', e.categoryCount);
+            console.log('Products:', e.productCount);
             document.getElementById('categoryCount').textContent = e.categoryCount;
+            document.getElementById('productCount').textContent = e.productCount;
         });
 </script>
 @stack('scripts')

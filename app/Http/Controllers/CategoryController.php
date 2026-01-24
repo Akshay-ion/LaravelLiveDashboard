@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\DashboardUpdated;
 use App\Models\Category;
+use App\Models\Product;
 use Exception;
 use Illuminate\Http\Request;
 
@@ -77,9 +78,7 @@ class CategoryController extends Controller
                 'name'=>$request->name,
             ]);
 
-            $categoryCount = Category::count();
-
-            broadcast(new DashboardUpdated($categoryCount));
+            $this->updateDataTableCounts();
 
             return response()->json(['status'=>200, 'message'=> 'Category Added Successfully']);
         }catch(Exception $e){
@@ -92,9 +91,18 @@ class CategoryController extends Controller
             $category = Category::findOrFail($id);
             $category->delete();
 
+            $this->updateDataTableCounts();
+
             return response()->json(['status'=>200, 'message'=> 'Category Deleted Successfully']);
         }catch(Exception $e){
             return response()->json(['status'=>500, 'message'=> 'Something Went Wrong: '.$e->getMessage()]);
         }
+    }
+
+    private function updateDataTableCounts(){
+        $categoryCount = Category::count();
+        $productCount  = Product::count();
+
+        broadcast(new DashboardUpdated($categoryCount, $productCount));
     }
 }

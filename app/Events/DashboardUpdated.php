@@ -12,10 +12,12 @@ class DashboardUpdated implements ShouldBroadcast
     use Dispatchable, SerializesModels;
 
     public $categoryCount;
+    public $productCount;
 
-    public function __construct($categoryCount)
+    public function __construct($categoryCount, $productCount)
     {
         $this->categoryCount = $categoryCount;
+        $this->productCount  = $productCount;
     }
 
     public function broadcastOn()

@@ -19,6 +19,16 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-6 offset-md-3">
+            <div class="card text-white bg-success rounded-4 shadow h-100">
+                <div class="card-body text-center">
+                    <p class="fs-2 mb-0" id="productCount">
+                        {{ $productCount }}
+                    </p>
+                    <h5 class="card-title fw-bold">Total Products</h5>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

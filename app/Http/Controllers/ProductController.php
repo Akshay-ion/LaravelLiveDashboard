@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\DashboardUpdated;
 use App\Models\Category;
 use App\Models\Product;
 use Exception;
@@ -113,6 +114,11 @@ class ProductController extends Controller
                 'name' => $request->name,
             ]);
 
+            $categoryCount = Category::count();
+            $productCount = Product::count();
+
+            $this->updateDataTableCounts();
+
             return response()->json([
                 'status' => 200,
                 'message' => 'Product created successfully.'
@@ -131,6 +137,8 @@ class ProductController extends Controller
             $product = Product::findOrFail($id);
             $product->delete();
 
+            $this->updateDataTableCounts();
+
             return response()->json([
                 'status' => 200,
                 'message' => 'Product deleted successfully.'
@@ -141,5 +149,12 @@ class ProductController extends Controller
                 'message' => 'An error occurred: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    private function updateDataTableCounts(){
+        $categoryCount = Category::count();
+        $productCount  = Product::count();
+
+        broadcast(new DashboardUpdated($categoryCount, $productCount));
     }
 }
