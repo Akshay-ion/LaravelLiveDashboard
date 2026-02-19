@@ -1,0 +1,23 @@
+services:
+  db:
+    build:
+      context: .
+      dockerfile: docker/mysql/Dockerfile
+    container_name: livedashboard-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: livedashboard
+      MYSQL_USER: livedashboard
+      MYSQL_PASSWORD: secret
+    ports:
+      - "4306:3306"
+    volumes:
+      - livedashboard_mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  livedashboard_mysql:
